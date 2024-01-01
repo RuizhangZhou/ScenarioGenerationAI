@@ -20,7 +20,7 @@ train_ds = torchvision.datasets.MNIST('data',
                                      transform=transform,
                                      download=True)
 
-datalodar=torch.utils.data.DataLoader(train_ds,batch_size=64,shuffle=True)
+dataloader=torch.utils.data.DataLoader(train_ds,batch_size=64,shuffle=True)
 
 class Generator(nn.Module):
     def __init__(self):
@@ -62,10 +62,10 @@ device='cuda' if torch.cuda.is_available() else 'cpu'
 gen = Generator().to(device)
 dis = Discriminator().to(device)
 
-#训练器的优化器
+#判别器的优化器
 d_optim = torch.optim.Adam(dis.parameters(),lr=0.0001)
-#训练生成器的优化器
-g_optim = torch.optim.Adam(dis.parameters(),lr=0.0001)
+#生成器的优化器
+g_optim = torch.optim.Adam(gen.parameters(),lr=0.0001)
 
 #交叉熵损失函数
 loss_fn = torch.nn.BCELoss()
@@ -89,7 +89,7 @@ for epoch in range(20):
     #初始化损失值
     d_epoch_loss = 0
     g_epoch_loss = 0
-    count = len(dataloader) #返回批次数
+    count = len(dataloader) #返回批次数 60000/64=938 batches
     #对数据集进行迭代
     for step,(img,_) in enumerate(dataloader):
         img =img.to(device) #把数据放到设备上
