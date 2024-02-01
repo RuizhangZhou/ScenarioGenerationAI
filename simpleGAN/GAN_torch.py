@@ -6,23 +6,84 @@ import numpy as np
 import matplotlib.pyplot as plt #绘图
 import torchvision #加载图片
 from torchvision import transforms #图片变换
+import pandas as pd
+from torch.utils.data import Dataset, DataLoader
+import os
 
 #对数据做归一化（-1，1）
-transform=transforms.Compose([
-    #将shanpe为（H,W，C）的数组或img转为shape为（C,H,W）的tensor
+img_transform=transforms.Compose([
+    #将shanpe为（H,W,C）的数组或img转为shape为（C,H,W）的tensor
     transforms.ToTensor(), #转为张量并归一化到【0，1】；数据只是范围变了，并没有改变分布
     transforms.Normalize(0.5,0.5)#数据归一化处理，将数据整理到[-1,1]之间；可让数据呈正态分布
 ])
 
 #下载数据到指定的文件夹
-train_ds = torchvision.datasets.MNIST('data',
-                                      train=True,
-                                     transform=transform,
-                                     download=True)
+# train_ds = torchvision.datasets.MNIST('data',
+#                                       train=True,
+#                                      transform=transform,
+#                                      download=True)
 
-dataloader=torch.utils.data.DataLoader(train_ds,batch_size=64,shuffle=True)
+# dataloader=torch.utils.data.DataLoader(train_ds,batch_size=64,shuffle=True)
+
+# Configure data loader
+# img_transform = transforms.Compose([
+#     # transforms.ToPILImage(),
+#     transforms.ToTensor(),
+#     transforms.Normalize((0.5,), (0.5,))  # (x-mean) / std
+# ])
+
+# 输入图片所在文件夹
+# 读取CSV文件
+# def read_csv_file(file_path):
+#     df = pd.read_csv(file_path)
+#     return df
+
+# def get_all_file_paths(folder_path):
+#     all_file_paths = []
+#     for root, dirs, files in os.walk(folder_path):
+#         for file in files:
+#             file_path = os.path.abspath(os.path.join(root, file))
+#             all_file_paths.append(file_path)
+#     return all_file_paths
+
+# folder_path = '/DATA1/rzhou/ika/testcases/inD/full_cases'  # 替换为你的文件夹路径
+# file_paths = get_all_file_paths(folder_path)
+# print(file_paths)
+
+
+# # 读取所有CSV文件
+# n = len(file_paths)  # 假设有n个文件
+# datasets = [read_csv_file(file_path) for file_path in file_paths]
+# # 合并数据集
+# combined_data = torch.cat([torch.tensor(df.values) for df in datasets])
+# # 重塑数据集维度
+# combined_data = combined_data.view(n, 45030, 4)
+
+class CustomDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+
+combined_data = torch.load('/DATA1/rzhou/ika/testcases/inD/inD_full_cases.pt')
+# 创建自定义Dataset实例
+custom_dataset = CustomDataset(combined_data)
+
+# 创建DataLoader
+batch_size = 64
+dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
+
+# 验证数据集维度
+sample_batch = next(iter(dataloader))
+print("数据集维度:", sample_batch.shape)  # 应该输出 (n, 45030, 4)
 
 class Generator(nn.Module):
+    #45030
     def __init__(self):
         super(Generator,self).__init__()
         self.main=nn.Sequential(
@@ -30,20 +91,44 @@ class Generator(nn.Module):
         nn.ReLU(),
         nn.Linear(256,512),
         nn.ReLU(),
-        nn.Linear(512,784),
+        nn.Linear(512,1024),
+        nn.ReLU(),
+        nn.Linear(1024,2048),
+        nn.ReLU(),
+        nn.Linear(2048,4096),
+        nn.ReLU(),
+        nn.Linear(4096,8192),
+        nn.ReLU(),
+        nn.Linear(8192,16384),
+        nn.ReLU(),
+        nn.Linear(16384,32768),
+        nn.ReLU(),
+        nn.Linear(32768,45030),
         nn.Tanh()#对于生成器，最后一个激活函数是tanh,值域：-1到1
         )
     #定义前向传播 
     def forward(self,x):  #x表示长度为100的noise输入
         img = self.main(x)
-        img=img.view(-1,28,28)#转换成图片的形式
+        img=img.view(-1,30,1501)#转换成图片的形式
         return img
     
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator,self).__init__()
         self.main = nn.Sequential(
-        nn.Linear(784,512),
+        nn.Linear(45030,32768),
+        nn.LeakyReLU(),
+        nn.Linear(32768,16384),
+        nn.LeakyReLU(),
+        nn.Linear(16384,8192),
+        nn.LeakyReLU(),
+        nn.Linear(8192,4096),
+        nn.LeakyReLU(),
+        nn.Linear(4096,2048),
+        nn.LeakyReLU(),
+        nn.Linear(2048,1024),
+        nn.LeakyReLU(),
+        nn.Linear(1024,512),
         nn.LeakyReLU(),
         nn.Linear(512,256),
         nn.LeakyReLU(),
@@ -51,7 +136,7 @@ class Discriminator(nn.Module):
         nn.Sigmoid()
         )
     def forward(self,x):
-        x =x.view(-1,784) #展平
+        x =x.view(-1,45030) #展平
         x =self.main(x)
         return x
     
