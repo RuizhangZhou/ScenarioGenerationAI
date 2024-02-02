@@ -10,6 +10,11 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 import os
 
+
+#设备的配置
+device='cuda' if torch.cuda.is_available() else 'cpu'
+os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+
 #对数据做归一化（-1，1）
 img_transform=transforms.Compose([
     #将shanpe为（H,W,C）的数组或img转为shape为（C,H,W）的tensor
@@ -79,29 +84,21 @@ batch_size = 64
 dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
 
 # 验证数据集维度
-sample_batch = next(iter(dataloader))
-print("数据集维度:", sample_batch.shape)  # 应该输出 (n, 45030, 4)
+# sample_batch = next(iter(dataloader))
+# print("数据集维度:", sample_batch.shape)  # 应该输出 (n, 45030, 4)
 
 class Generator(nn.Module):
     #45030
     def __init__(self):
         super(Generator,self).__init__()
         self.main=nn.Sequential(
-        nn.Linear(100,256),
+        nn.Linear(100,512),
         nn.ReLU(),
-        nn.Linear(256,512),
+        nn.Linear(512,2048),
         nn.ReLU(),
-        nn.Linear(512,1024),
+        nn.Linear(2048,8192),
         nn.ReLU(),
-        nn.Linear(1024,2048),
-        nn.ReLU(),
-        nn.Linear(2048,4096),
-        nn.ReLU(),
-        nn.Linear(4096,8192),
-        nn.ReLU(),
-        nn.Linear(8192,16384),
-        nn.ReLU(),
-        nn.Linear(16384,32768),
+        nn.Linear(8192,32768),
         nn.ReLU(),
         nn.Linear(32768,45030),
         nn.Tanh()#对于生成器，最后一个激活函数是tanh,值域：-1到1
@@ -118,30 +115,22 @@ class Discriminator(nn.Module):
         self.main = nn.Sequential(
         nn.Linear(45030,32768),
         nn.LeakyReLU(),
-        nn.Linear(32768,16384),
+        nn.Linear(32768,8192),
         nn.LeakyReLU(),
-        nn.Linear(16384,8192),
+        nn.Linear(8192,2048),
         nn.LeakyReLU(),
-        nn.Linear(8192,4096),
+        nn.Linear(2048,512),
         nn.LeakyReLU(),
-        nn.Linear(4096,2048),
+        nn.Linear(512,128),
         nn.LeakyReLU(),
-        nn.Linear(2048,1024),
-        nn.LeakyReLU(),
-        nn.Linear(1024,512),
-        nn.LeakyReLU(),
-        nn.Linear(512,256),
-        nn.LeakyReLU(),
-        nn.Linear(256,1),
+        nn.Linear(128,1),
         nn.Sigmoid()
         )
     def forward(self,x):
         x =x.view(-1,45030) #展平
-        x =self.main(x)
+        x =self.main(x.float())
         return x
     
-#设备的配置
-device='cuda' if torch.cuda.is_available() else 'cpu'
 
 #初始化生成器和判别器把他们放到相应的设备上
 gen = Generator().to(device)
@@ -155,14 +144,14 @@ g_optim = torch.optim.Adam(gen.parameters(),lr=0.0001)
 #交叉熵损失函数
 loss_fn = torch.nn.BCELoss()
 
-def gen_img_plot(model,test_input):
-    prediction = np.squeeze(model(test_input).detach().cpu().numpy())
-    fig = plt.figure(figsize=(4,4))
-    for i in range(16):
-        plt.subplot(4,4,i+1)
-        plt.imshow((prediction[i]+1)/2)
-        plt.axis('off')
-    plt.show()
+# def gen_img_plot(model,test_input):
+#     prediction = np.squeeze(model(test_input).detach().cpu().numpy())
+#     fig = plt.figure(figsize=(4,4))
+#     for i in range(16):
+#         plt.subplot(4,4,i+1)
+#         plt.imshow((prediction[i]+1)/2)
+#         plt.axis('off')
+#     plt.show()
     
 test_input = torch.randn(16,100 ,device=device) #16个长度为100的随机数
 
@@ -170,13 +159,13 @@ D_loss = []
 G_loss = []
 
 #训练循环
-for epoch in range(20):
+for epoch in range(5):
     #初始化损失值
     d_epoch_loss = 0
     g_epoch_loss = 0
     count = len(dataloader) #返回批次数 60000/64=938 batches
     #对数据集进行迭代
-    for step,(img,_) in enumerate(dataloader):
+    for step,img in enumerate(dataloader):
         img =img.to(device) #把数据放到设备上
         size = img.size(0) #img的第一位是size,获取批次的大小
         random_noise = torch.randn(size,100,device=device)
@@ -219,9 +208,12 @@ for epoch in range(20):
             g_epoch_loss +=g_loss
     #求平均损失
     with torch.no_grad():
-            d_epoch_loss /=count
-            g_epoch_loss /=count
-            D_loss.append(d_epoch_loss)
-            G_loss.append(g_epoch_loss)
-            print('Epoch:',epoch)
-            gen_img_plot(gen,test_input)
+        d_epoch_loss /=count
+        g_epoch_loss /=count
+        D_loss.append(d_epoch_loss)
+        G_loss.append(g_epoch_loss)
+        print('Epoch:',epoch)
+        print('dLoss:',d_epoch_loss)
+        print('gLoss:',g_epoch_loss)
+        print(gen_img)
+            
