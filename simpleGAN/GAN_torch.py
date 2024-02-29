@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim #优化
 import numpy as np
-import matplotlib.pyplot as plt #绘图
+#import matplotlib.pyplot as plt #绘图
 import torchvision #加载图片
 from torchvision import transforms #图片变换
 import pandas as pd
@@ -13,7 +13,7 @@ import os
 
 #设备的配置
 device='cuda' if torch.cuda.is_available() else 'cpu'
-os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+os.environ['CUDA_VISIBLE_DEVICES'] = "1,2"
 
 #对数据做归一化（-1，1）
 img_transform=transforms.Compose([
@@ -98,9 +98,7 @@ class Generator(nn.Module):
         nn.ReLU(),
         nn.Linear(2048,8192),
         nn.ReLU(),
-        nn.Linear(8192,32768),
-        nn.ReLU(),
-        nn.Linear(32768,45030),
+        nn.Linear(8192,45030),
         nn.Tanh()#对于生成器，最后一个激活函数是tanh,值域：-1到1
         )
     #定义前向传播 
@@ -113,17 +111,13 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator,self).__init__()
         self.main = nn.Sequential(
-        nn.Linear(45030,32768),
-        nn.LeakyReLU(),
-        nn.Linear(32768,8192),
+        nn.Linear(45030,8192),
         nn.LeakyReLU(),
         nn.Linear(8192,2048),
         nn.LeakyReLU(),
         nn.Linear(2048,512),
         nn.LeakyReLU(),
-        nn.Linear(512,128),
-        nn.LeakyReLU(),
-        nn.Linear(128,1),
+        nn.Linear(512,1),
         nn.Sigmoid()
         )
     def forward(self,x):
@@ -159,7 +153,7 @@ D_loss = []
 G_loss = []
 
 #训练循环
-for epoch in range(5):
+for epoch in range(50):
     #初始化损失值
     d_epoch_loss = 0
     g_epoch_loss = 0
@@ -216,4 +210,6 @@ for epoch in range(5):
         print('dLoss:',d_epoch_loss)
         print('gLoss:',g_epoch_loss)
         print(gen_img)
+        
+#CUDA_CUDA_VISIBLE_DEVICES=1,2 nohup python GAN_torch.py >> ./train.log 2>&1 &
             
