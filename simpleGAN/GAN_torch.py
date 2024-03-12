@@ -211,5 +211,5 @@ for epoch in range(50):
         print('gLoss:',g_epoch_loss)
         print(gen_img)
         
-#CUDA_CUDA_VISIBLE_DEVICES=1,2 nohup python GAN_torch.py >> ./train.log 2>&1 &
+#CUDA_CUDA_VISIBLE_DEVICES=2,1,0 nohup python GAN_torch.py >> ./train2.log 2>&1 &
             
