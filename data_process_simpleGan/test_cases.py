@@ -2,13 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES']='2'
-
-
 # with open("testcases/inD/casescases.csv", "w") as f_cases:
 #     f.truncate(0)
-
-
 
 def trim_cases(Dtype,n):
     tracks_np = pd.read_csv("testcases/%(Dtype)s/%(Dtype)s_%(n)02d_testcases_vehicles_test.csv" %{'Dtype':Dtype,'Dtype':Dtype,'n':n}).values

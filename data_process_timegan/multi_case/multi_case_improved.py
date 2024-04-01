@@ -6,11 +6,11 @@ import math
 
 Dtype="inD" 
 cur_multi_id=1
-interval=100 #可调 100=4分钟
+interval=250 #可调 100=4s 250=10s
 num_tracks_each_case=5 #可调 暂设每个case5辆车
 
 
-with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29.csv" %{'Dtype':Dtype}, "w") as f_multi:
+with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29_interval250.csv" %{'Dtype':Dtype}, "w") as f_multi:
         f_multi.truncate(0)
         f_multi.write("caseID")
         for i in range(1,num_tracks_each_case+1):
@@ -42,7 +42,7 @@ for n in range(18,30):
     tracksMeta_np = pd.read_csv("/DATA1/rzhou/ika/%(Dtype)s/data/%(n)02d_tracksMeta.csv" %{'Dtype':Dtype,'n':n}).values
     for trackId in range(numTracks):
         numFrames=tracksMeta_np[trackId][4]
-        if(numFrames>10000): continue
+        if(numFrames>5000 or numFrames<interval): continue
         initialIdx=math.ceil(tracksMeta_np[trackId][2]/interval)
         finalIdx=math.ceil(tracksMeta_np[trackId][3]/interval)
         for idx in range(initialIdx,finalIdx-1):
@@ -54,21 +54,21 @@ for n in range(18,30):
     cur_r_start=0
     tracks_np = pd.read_csv("/DATA1/rzhou/ika/%(Dtype)s/data/%(n)02d_tracks.csv" %{'Dtype':Dtype,'n':n},low_memory=False).values
     rows_tracks_np = tracks_np.shape[0] 
-    with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29.csv" %{'Dtype':Dtype}, "a") as f_multi:
+    with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29_interval250.csv" %{'Dtype':Dtype}, "a") as f_multi:
         for i in range(length):
             if len(arr[i])<num_tracks_each_case:continue
             arr[i]=arr[i][:num_tracks_each_case]
-            temp_arr = np.ones((num_tracks_each_case, interval,2))
+            temp_arr = np.ones((num_tracks_each_case, interval,2))#(5,250,2)
             temp_track_id=0
             r=cur_r_start
             while r < rows_tracks_np:
-                if tracks_np[r][1] in arr[i] and tracks_np[r][2] == i*100:
+                if tracks_np[r][1] in arr[i] and tracks_np[r][2] == i*interval:
                     if temp_track_id==0: cur_r_start=r+1
                     for a in range(interval):
                         temp_arr[temp_track_id][a][0]=tracks_np[r+a][4]#xCenter
                         temp_arr[temp_track_id][a][1]=tracks_np[r+a][5]#yCenter
                     temp_track_id+=1
-                if temp_track_id>4: break
+                if temp_track_id>=num_tracks_each_case: break
                 r+=1
             
             for a in range(interval):
