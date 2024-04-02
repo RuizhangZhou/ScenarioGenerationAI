@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 import os
-def optimize_process(Dtype, n, seq_length=1000, interval=100):
+def optimize_process(Dtype, n, seq_length=500, interval=100):
 
     recordingMeta_file_path = "/DATA1/rzhou/ika/%(Dtype)s/data/%(n)02d_recordingMeta.csv" %{'Dtype':Dtype,'n':n}
     recordingMeta_df = pd.read_csv(recordingMeta_file_path)
@@ -12,10 +12,11 @@ def optimize_process(Dtype, n, seq_length=1000, interval=100):
     
     
     # 参数设置
-    seq_length = 1000  # 每个案例的帧数长度
+    seq_length = 500  # 每个案例的帧数长度
     interval = 100  # 案例之间的开始帧数间隔
 
     num_cases = math.ceil((num_frames_recording - seq_length) / interval) + 1
+    print(f"num_cases:{num_cases}")
 
     # 初始化列表存储每个案例的track IDs
     trackIDLists = [[] for _ in range(num_cases)]
@@ -48,6 +49,7 @@ def optimize_process(Dtype, n, seq_length=1000, interval=100):
 
     # 筛选出非空的trackIDLists
     filtered_trackIDLists = [trackIDs for trackIDs in trackIDLists if trackIDs]
+    num_cases_filtered=len(filtered_trackIDLists)
 
     # 打印结果
     # for i, trackIDs in enumerate(filtered_trackIDLists):
@@ -64,27 +66,33 @@ def optimize_process(Dtype, n, seq_length=1000, interval=100):
     columns = ['caseID'] + [f'{xy}{i+1}' for i in range(max_tracks) for xy in ['x', 'y']]
 
     # 计算总行数
-    total_rows = seq_length * num_cases
+    total_rows = seq_length * num_cases_filtered
 
     # 创建一个全是0的DataFrame，指定float64类型
     df = pd.DataFrame(0, index=np.arange(total_rows), columns=columns).astype({'caseID': 'int'}).astype({col: 'float64' for col in columns if col != 'caseID'})
 
     # 设置caseID列
-    df['caseID'] = np.repeat(np.arange(1, num_cases + 1), seq_length)
+    df['caseID'] = np.repeat(np.arange(1, num_cases_filtered + 1), seq_length)
+    print(f"num_cases_filtered:{num_cases_filtered}")
 
-    # 遍历每个案例
-    for case_id in range(num_cases):
-        start_frame_of_case = interval * case_id
+    # 遍历每个案例start_frame_of_case
+    start_frame_of_case=0
+    for case_id in range(num_cases_filtered):
+        #start_frame_of_case = interval * case_id
         start_row_of_case = case_id * seq_length
 
         # 遍历当前案例中的轨迹ID
         # for track_idx in range(len(filtered_trackIDLists[case_id])):
         #     track_id = filtered_trackIDLists[case_id][track_idx]
-        for track_idx, track_id in enumerate(filtered_trackIDLists[case_id]):
-            #print(track_idx)
-            #print(track_id)
+        for track_idx, track_id in enumerate(trackIDLists[case_id]):
+            # print(track_idx)
+            # print(track_id)
             # 获取轨迹的初始帧和最终帧
             initial_frame = df_tracksMeta.loc[track_id, "initialFrame"]
+            
+            while start_frame_of_case + seq_length - 1 < initial_frame : start_frame_of_case += interval 
+            # 如果当前case中的track的initialframe不在当前的start_frame_of_case ~ start_frame_of_case + seq_length-1中
+            
             final_frame = df_tracksMeta.loc[track_id, "finalFrame"]
             
             # 确定当前案例中轨迹的起止帧
@@ -102,13 +110,14 @@ def optimize_process(Dtype, n, seq_length=1000, interval=100):
             
             track_data = tracks_df.iloc[track_rows_start:track_rows_end]
             if track_data.empty:
-                print(case_id)
-                print(track_id)
+                print(f"case_id:{case_id}, track_id:{track_id}, track_rows_start:{track_rows_start},track_rows_end: {track_rows_end}, start_frame:{start_frame}, end_frame:{end_frame}")
                 print("没有找到对应的track数据")
             
             # 更新DataFrame
             df.loc[start_row:end_row, f'x{track_idx+1}'] = track_data["xCenter"].values
             df.loc[start_row:end_row, f'y{track_idx+1}'] = track_data["yCenter"].values
+            
+        start_frame_of_case += interval
 
     # 注意：这里假设tracks_df是按trackId和frame排序的，而且pointers数组已正确初始化
 
@@ -132,9 +141,15 @@ for Dtype in ["inD", "rounD"]:
         print(f"Processing file {n} of {num_files} for {Dtype}")
         optimize_process(Dtype, n)
         
+# Dtype="rounD"
+# for num_files in range(2,9):
+#     print(f"Processing file {n} of {num_files} for {Dtype}")
+#         optimize_process(Dtype, n)
+        
         
 # Example call
-# optimize_process("inD", 0)
+# optimize_process("inD", 4)
+
 
 
 #nohup python dataprocess_improved.py >> /home/rzhou/Projects/scenariogenerationai/data_process_diffts/log/dataprocess_improved.log 2>&1
