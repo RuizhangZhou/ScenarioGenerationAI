@@ -1,0 +1,58 @@
+  File "/home/rzhou/Projects/scenariogenerationai/data_process_diffts/dataprocess_improved.py", line 147
+    optimize_process(Dtype, n)
+IndentationError: unexpected indent
+Traceback (most recent call last):
+  File "/home/rzhou/Projects/scenariogenerationai/data_process_diffts/dataprocess_improved.py", line 146, in <module>
+    print(f"Processing file {n} of {num_files} for {Dtype}")
+                             ^
+NameError: name 'n' is not defined. Did you mean: 'np'?
+Traceback (most recent call last):
+  File "/home/rzhou/Projects/scenariogenerationai/data_process_diffts/dataprocess_improved.py", line 146, in <module>
+    print(f"Processing file {num_files} of {num_files} for {Dtype}")
+                                                            ^^^^^
+NameError: name 'Dtype' is not defined. Did you mean: 'type'?
+Processing file 9 of 9 for rounD
+num_cases:264
+num_cases_filtered:264
+Processing file 10 of 10 for rounD
+num_cases:284
+num_cases_filtered:284
+Processing file 11 of 11 for rounD
+num_cases:256
+num_cases_filtered:256
+Processing file 12 of 12 for rounD
+num_cases:266
+num_cases_filtered:266
+Processing file 13 of 13 for rounD
+num_cases:141
+num_cases_filtered:141
+Processing file 14 of 14 for rounD
+num_cases:282
+num_cases_filtered:282
+Processing file 15 of 15 for rounD
+num_cases:107
+num_cases_filtered:107
+Processing file 16 of 16 for rounD
+num_cases:139
+num_cases_filtered:139
+Processing file 17 of 17 for rounD
+num_cases:256
+num_cases_filtered:256
+Processing file 18 of 18 for rounD
+num_cases:273
+num_cases_filtered:273
+Processing file 19 of 19 for rounD
+num_cases:190
+num_cases_filtered:190
+Processing file 20 of 20 for rounD
+num_cases:282
+num_cases_filtered:282
+Processing file 21 of 21 for rounD
+num_cases:273
+num_cases_filtered:273
+Processing file 22 of 22 for rounD
+num_cases:290
+num_cases_filtered:290
+Processing file 23 of 23 for rounD
+num_cases:234
+num_cases_filtered:234

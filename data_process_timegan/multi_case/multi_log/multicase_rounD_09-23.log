@@ -1,0 +1,6 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/rzhou/Projects/scenariogenerationai/data_process_timegan/multi_case/multi_case_improved.py", line 16, in <module>
+    with open(f"/DATA1/rzhou/ika/multi_testcases/{DType}_multi_{startmap:02d}-{endmap}_interval{interval}_numfea{num_fea}.csv", "w") as f_multi:
+                                                  ^^^^^
+NameError: name 'DType' is not defined. Did you mean: 'Dtype'?

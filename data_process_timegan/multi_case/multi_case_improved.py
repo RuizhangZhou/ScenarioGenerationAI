@@ -5,12 +5,15 @@ import csv
 import math
 
 Dtype="inD" 
+startmap=9
+endmap=23
 cur_multi_id=1
 interval=250 #可调 100=4s 250=10s
 num_tracks_each_case=5 #可调 暂设每个case5辆车
+num_fea=2*num_tracks_each_case
 
 
-with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29_interval250.csv" %{'Dtype':Dtype}, "w") as f_multi:
+with open(f"/DATA1/rzhou/ika/multi_testcases/{Dtype}_multi_{startmap:02d}-{endmap}_interval{interval}_numfea{num_fea}_withoutpadding.csv", "w") as f_multi:
         f_multi.truncate(0)
         f_multi.write("caseID")
         for i in range(1,num_tracks_each_case+1):
@@ -18,7 +21,7 @@ with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29_interval250.cs
         f_multi.write("\n")
 
 
-for n in range(18,30):
+for n in range(startmap,endmap+1):
     print("n:%(n)d" %{'n':n})
     with open("/DATA1/rzhou/ika/%(Dtype)s/data/%(n)02d_recordingMeta.csv" %{'Dtype':Dtype,'n':n}, mode='r') as f_recordingMeta:
         recordingMeta_dict_reader = csv.DictReader(f_recordingMeta)
@@ -54,7 +57,7 @@ for n in range(18,30):
     cur_r_start=0
     tracks_np = pd.read_csv("/DATA1/rzhou/ika/%(Dtype)s/data/%(n)02d_tracks.csv" %{'Dtype':Dtype,'n':n},low_memory=False).values
     rows_tracks_np = tracks_np.shape[0] 
-    with open("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s_multi_18-29_interval250.csv" %{'Dtype':Dtype}, "a") as f_multi:
+    with open(f"/DATA1/rzhou/ika/multi_testcases/{Dtype}_multi_{startmap:02d}-{endmap}_interval{interval}_numfea{num_fea}_withoutpadding.csv", "a") as f_multi:
         for i in range(length):
             if len(arr[i])<num_tracks_each_case:continue
             arr[i]=arr[i][:num_tracks_each_case]
@@ -79,4 +82,4 @@ for n in range(18,30):
             cur_multi_id+=1
                     
                     
-# nohup env CUDA_VISIBLE_DEVICES=2,1,0 python multi_case_improved.py >> /home/rzhou/Projects/scenariogenerationai/data_process_timegan/multi_case/multi_log/multicase_inD_18-29.log 2>&1 &
+# nohup python multi_case_improved.py >> /home/rzhou/Projects/scenariogenerationai/data_process_timegan/multi_case/multi_log/multicase_inD_18-29.log 2>&1 &

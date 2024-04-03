@@ -135,16 +135,16 @@ def optimize_process(Dtype, n, seq_length=500, interval=100):
 
 
 # Loop through all inD and rounD datasets
-for Dtype in ["inD", "rounD"]:
-    num_files = {"inD": 32, "rounD": 8}[Dtype]
-    for n in range(num_files + 1):
-        print(f"Processing file {n} of {num_files} for {Dtype}")
-        optimize_process(Dtype, n)
-        
-# Dtype="rounD"
-# for num_files in range(2,9):
-#     print(f"Processing file {n} of {num_files} for {Dtype}")
+# for Dtype in ["inD", "rounD"]:
+#     num_files = {"inD": 32, "rounD": 8}[Dtype]
+#     for n in range(num_files + 1):
+#         print(f"Processing file {n} of {num_files} for {Dtype}")
 #         optimize_process(Dtype, n)
+        
+Dtype="rounD"
+for num_files in range(9,24):
+    print(f"Processing file {num_files} of {num_files} for {Dtype}")
+    optimize_process(Dtype, num_files)
         
         
 # Example call
