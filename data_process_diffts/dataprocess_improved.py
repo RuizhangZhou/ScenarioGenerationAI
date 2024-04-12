@@ -38,7 +38,7 @@ def optimize_process(Dtype, n, seq_length=500, interval=50):
         v_class= row['class']
 
         # 跳过帧数过多或过少的tracks,或者是行人
-        if numFrames > 4*seq_length or v_class=="pedestrian":
+        if numFrames > 4*seq_length or v_class=="pedestrian" or v_class=="bicycle" or v_class=="motorcycle":
             continue
 
         # 确定track出现在哪些案例中
@@ -77,7 +77,8 @@ def optimize_process(Dtype, n, seq_length=500, interval=50):
 
     # 打印结果
     for i, trackIDs in enumerate(trackIDLists):
-        print(f"Case {i+1}: Track IDs: {trackIDs}")
+        if len(trackIDs) >= min_v:
+            print(f"Case {i+1}: Track IDs: {trackIDs}")
 
     # 初始化一个列表来存储每个案例的track数量，并计算最多的track数量
     # track_counts = [len(track_ids) for track_ids in filtered_trackIDLists]
@@ -139,13 +140,23 @@ def optimize_process(Dtype, n, seq_length=500, interval=50):
 
     num_features=2*min_v
 
-    output_file_path = "/DATA1/rzhou/ika/multi_testcases/%(Dtype)s/%(Dtype)s_map%(n)02d_interval%(interval)d_seq%(seq_length)d_nfea%(num_features)d.csv" %{'Dtype':Dtype,'n':n, 'interval': interval, 'seq_length': seq_length, 'num_features': num_features}
+    def checkDirExistOrCreate(dir):
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+    # 定义文件路径
+    dtypeDir = f'/DATA1/rzhou/ika/multi_testcases/{Dtype}'
+    checkDirExistOrCreate(dtypeDir)
+    cases_csv_path = f'{dtypeDir}/{Dtype}_map{n:02d}_interval{interval}_seq{seq_length}_nfea{num_features}.csv'
+    
+    
+    
     # 清空文件
-    with open(output_file_path, 'w') as file:
+    with open(cases_csv_path, 'w') as file:
         pass
 
     # 将DataFrame写入CSV
-    df.to_csv("/DATA1/rzhou/ika/multi_testcases/%(Dtype)s/%(Dtype)s_map%(n)02d_interval%(interval)d_seq%(seq_length)d_nfea%(num_features)d.csv" %{'Dtype':Dtype,'n':n, 'interval': interval, 'seq_length': seq_length, 'num_features': num_features}, index=False)
+    df.to_csv(cases_csv_path, index=False)
 
 
 
@@ -157,14 +168,14 @@ def optimize_process(Dtype, n, seq_length=500, interval=50):
 #         print(f"Processing file {n} of {num_files} for {Dtype}")
 #         optimize_process(Dtype, n)
         
-Dtype="inD"
-for num_files in range(7,18):
+Dtype="exiD"
+for num_files in range(0,19):
     print(f"Processing file {num_files} of {num_files} for {Dtype}")
     optimize_process(Dtype, num_files)
         
         
 # Example call
-# optimize_process("rounD", 9)
+#optimize_process("inD", 29)
 
 
 
