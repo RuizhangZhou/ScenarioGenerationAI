@@ -1,5 +1,3 @@
-# ScenarioGenerationAI
-
 # Scenario Generation AI
 
 This repository is part of a series of projects focused on generating synthetic data using various generative models. The projects aim to apply and optimize generative models for experiments related to scenario generation, particularly in the context of time series data.
