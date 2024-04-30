@@ -6,7 +6,7 @@ This repository is part of a series of projects focused on generating synthetic 
 
 ### Generative Adversarial Networks (GAN)
 - **Source**: [PyTorch-GAN by Erik Linder-Norén](https://github.com/eriklindernoren/PyTorch-GAN)
-- **Fork with Modifications**: [GAN & Dataprocess](https://git.rwth-aachen.de/CPM/Project/Lab/Students/zhou/scenariogenerationai)
+- **Fork with Modifications**:This repository [GAN & Dataprocess](https://github.com/RuizhangZhou/ScenarioGenerationAI)
 
 ### TimeGAN
 - **Source**:
